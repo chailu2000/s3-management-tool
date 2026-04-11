@@ -46,3 +46,76 @@ jobs:
       - name: Run unit tests
         run: pnpm test
         timeout-minutes: 10
+
+  e2e-tests:
+    name: E2E Tests (LocalStack)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-e2e-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            node-modules-e2e-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Compile extension
+        run: pnpm run compile
+
+      - name: Start LocalStack
+        run: docker compose -f src/tests/e2e/config/docker-compose.localstack.yml up -d
+
+      - name: Wait for LocalStack health check
+        run: |
+          echo "Waiting for LocalStack to be ready..."
+          for i in {1..30}; do
+            if curl -s http://localhost:4566/_localstack/health | grep -q '"s3": "available"'; then
+              echo "LocalStack is ready!"
+              exit 0
+            fi
+            echo "Attempt $i: LocalStack not ready yet, waiting..."
+            sleep 2
+          done
+          echo "LocalStack failed to start"
+          docker compose -f src/tests/e2e/config/docker-compose.localstack.yml logs
+          exit 1
+
+      - name: Run E2E tests
+        run: pnpm run test:e2e:ci
+        timeout-minutes: 15
+        env:
+          AWS_ENDPOINT_URL: http://localhost:4566
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_REGION: us-east-1
+          CI: "true"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: s3-test-results
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Stop LocalStack
+        if: always()
+        run: docker compose -f src/tests/e2e/config/docker-compose.localstack.yml down
