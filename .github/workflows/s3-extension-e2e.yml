@@ -81,6 +81,8 @@ jobs:
 
       - name: Start LocalStack
         run: docker compose -f src/tests/e2e/config/docker-compose.localstack.yml up -d
+        env:
+          LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
 
       - name: Wait for LocalStack health check
         run: |
@@ -119,3 +121,5 @@ jobs:
       - name: Stop LocalStack
         if: always()
         run: docker compose -f src/tests/e2e/config/docker-compose.localstack.yml down
+        env:
+          LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
