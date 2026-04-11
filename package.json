@@ -1,0 +1,388 @@
+{
+    "name": "s3-management-tool",
+    "displayName": "AWS S3 Management Tool",
+    "description": "Manage AWS S3 buckets and objects directly from VS Code.",
+    "version": "0.2.0",
+    "publisher": "chailu2000",
+    "author": {
+        "name": "Lu Chai",
+        "email": "chailu2000@gmail.com"
+    },
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/chailu2000/s3-management-tool"
+    },
+    "bugs": {
+        "url": "https://github.com/chailu2000/s3-management-tool/issues"
+    },
+    "homepage": "https://github.com/chailu2000/s3-management-tool#readme",
+    "icon": "images/icon.png",
+    "galleryBanner": {
+        "color": "#232F3E",
+        "theme": "dark"
+    },
+    "keywords": [
+        "aws",
+        "s3",
+        "storage",
+        "amazon",
+        "cloud",
+        "devops",
+        "file manager",
+        "bucket",
+        "sync",
+        "upload",
+        "download"
+    ],
+    "categories": [
+        "Other"
+    ],
+    "engines": {
+        "vscode": "^1.88.0"
+    },
+    "activationEvents": [
+        "onView:s3ManagementBuckets"
+    ],
+    "main": "./out/extension-standalone.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "s3-management-tool.addBucketByName",
+                "title": "Add Bucket by Name",
+                "icon": "$(add)"
+            },
+            {
+                "command": "s3-management-tool.addBucketByArn",
+                "title": "Add Bucket by ARN"
+            },
+            {
+                "command": "s3-management-tool.addBucketWithPrefix",
+                "title": "Add Bucket with Prefix",
+                "icon": "$(new-folder)"
+            },
+            {
+                "command": "s3-management-tool.removeBucket",
+                "title": "Remove Bucket",
+                "icon": "$(debug-disconnect)"
+            },
+            {
+                "command": "s3-management-tool.refreshBuckets",
+                "title": "Refresh Buckets",
+                "icon": "$(refresh)"
+            },
+            {
+                "command": "s3-management-tool.selectAwsProfile",
+                "title": "Select AWS Profile"
+            },
+            {
+                "command": "s3-management-tool.downloadObject",
+                "title": "Download Object",
+                "icon": "$(cloud-download)"
+            },
+            {
+                "command": "s3-management-tool.uploadObject",
+                "title": "Upload Object",
+                "icon": "$(cloud-upload)"
+            },
+            {
+                "command": "s3-management-tool.deleteObject",
+                "title": "Delete Object",
+                "icon": "$(trash)"
+            },
+            {
+                "command": "s3-management-tool.copyObject",
+                "title": "Copy Object"
+            },
+            {
+                "command": "s3-management-tool.viewMetadata",
+                "title": "View Metadata",
+                "icon": "$(info)"
+            },
+            {
+                "command": "s3-management-tool.generatePresignedUrl",
+                "title": "Generate Presigned URL"
+            },
+            {
+                "command": "s3-management-tool.syncLocalToS3",
+                "title": "S3: Sync Local to S3"
+            },
+            {
+                "command": "s3-management-tool.syncS3ToLocal",
+                "title": "S3: Sync S3 to Local"
+            },
+            {
+                "command": "s3-management-tool.syncBidirectional",
+                "title": "S3: Bidirectional Sync"
+            },
+            {
+                "command": "s3-management-tool.createSyncProfile",
+                "title": "S3: Create Sync Profile"
+            },
+            {
+                "command": "s3-management-tool.runSyncProfile",
+                "title": "S3: Run Sync Profile"
+            },
+            {
+                "command": "s3-management-tool.editSyncProfile",
+                "title": "S3: Edit Sync Profile"
+            },
+            {
+                "command": "s3-management-tool.deleteSyncProfile",
+                "title": "S3: Delete Sync Profile"
+            },
+            {
+                "command": "s3-management-tool.startWatchMode",
+                "title": "S3: Start Watch Mode"
+            },
+            {
+                "command": "s3-management-tool.stopWatchMode",
+                "title": "S3: Stop Watch Mode"
+            },
+            {
+                "command": "s3-management-tool.viewSyncResults",
+                "title": "S3: View Sync Results"
+            },
+            {
+                "command": "s3-management-tool.createFolder",
+                "title": "Create Folder",
+                "icon": "$(new-folder)"
+            },
+            {
+                "command": "s3-management-tool.copyS3Uri",
+                "title": "Copy S3 URI",
+                "icon": "$(clippy)"
+            },
+            {
+                "command": "s3-management-tool.bucketInfo",
+                "title": "Bucket Info",
+                "icon": "$(info)"
+            },
+            {
+                "command": "s3-management-tool.previewObject",
+                "title": "Preview Content",
+                "icon": "$(preview)"
+            },
+            {
+                "command": "s3-management-tool.loadMore",
+                "title": "Load More",
+                "icon": "$(arrow-down)"
+            },
+            {
+                "command": "s3-management-tool.downloadFolder",
+                "title": "Download Folder",
+                "icon": "$(cloud-download)"
+            },
+            {
+                "command": "s3-management-tool.viewVersions",
+                "title": "View Versions",
+                "icon": "$(history)"
+            },
+            {
+                "command": "s3-management-tool.renameObject",
+                "title": "Rename",
+                "icon": "$(edit)"
+            },
+            {
+                "command": "s3-management-tool.manageTags",
+                "title": "Manage Tags",
+                "icon": "$(tag)"
+            },
+            {
+                "command": "s3-management-tool.downloadSelected",
+                "title": "Download Selected",
+                "icon": "$(cloud-download)"
+            }
+        ],
+        "views": {
+            "explorer": [
+                {
+                    "id": "s3ManagementBuckets",
+                    "name": "S3 Buckets"
+                }
+            ]
+        },
+        "viewsWelcome": [
+            {
+                "view": "s3ManagementBuckets",
+                "contents": "No S3 buckets configured.\n[Select AWS Profile](command:s3-management-tool.selectAwsProfile)\n[Add Bucket by Name](command:s3-management-tool.addBucketByName)\n[Add Bucket with Prefix](command:s3-management-tool.addBucketWithPrefix)\nTo get started, configure your AWS credentials and add a bucket by name or prefix."
+            }
+        ],
+        "menus": {
+            "view/title": [
+                {
+                    "command": "s3-management-tool.refreshBuckets",
+                    "when": "view == s3ManagementBuckets",
+                    "group": "navigation"
+                },
+                {
+                    "command": "s3-management-tool.addBucketByName",
+                    "when": "view == s3ManagementBuckets",
+                    "group": "navigation"
+                },
+                {
+                    "command": "s3-management-tool.addBucketWithPrefix",
+                    "when": "view == s3ManagementBuckets",
+                    "group": "navigation"
+                },
+                {
+                    "command": "s3-management-tool.syncLocalToS3",
+                    "when": "view == s3ManagementBuckets",
+                    "group": "2_sync"
+                },
+                {
+                    "command": "s3-management-tool.syncS3ToLocal",
+                    "when": "view == s3ManagementBuckets",
+                    "group": "2_sync"
+                },
+                {
+                    "command": "s3-management-tool.runSyncProfile",
+                    "when": "view == s3ManagementBuckets",
+                    "group": "2_sync"
+                },
+                {
+                    "command": "s3-management-tool.startWatchMode",
+                    "when": "view == s3ManagementBuckets",
+                    "group": "2_sync"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "s3-management-tool.removeBucket",
+                    "when": "view == s3ManagementBuckets && viewItem == s3Bucket",
+                    "group": "inline"
+                },
+                {
+                    "command": "s3-management-tool.bucketInfo",
+                    "when": "view == s3ManagementBuckets && viewItem == s3Bucket",
+                    "group": "bucket@1"
+                },
+                {
+                    "command": "s3-management-tool.createFolder",
+                    "when": "view == s3ManagementBuckets && viewItem == s3Bucket",
+                    "group": "1_object@0"
+                },
+                {
+                    "command": "s3-management-tool.createFolder",
+                    "when": "view == s3ManagementBuckets && viewItem == s3Prefix",
+                    "group": "1_object@0"
+                },
+                {
+                    "command": "s3-management-tool.downloadFolder",
+                    "when": "view == s3ManagementBuckets && viewItem == s3Prefix",
+                    "group": "1_object@1"
+                },
+                {
+                    "command": "s3-management-tool.uploadObject",
+                    "when": "view == s3ManagementBuckets && viewItem == s3Prefix",
+                    "group": "1_object@2"
+                },
+                {
+                    "command": "s3-management-tool.copyS3Uri",
+                    "when": "view == s3ManagementBuckets && viewItem == s3Prefix",
+                    "group": "1_object@3"
+                },
+                {
+                    "command": "s3-management-tool.deleteObject",
+                    "when": "view == s3ManagementBuckets && viewItem == s3Prefix",
+                    "group": "inline"
+                },
+                {
+                    "command": "s3-management-tool.renameObject",
+                    "when": "view == s3ManagementBuckets && viewItem == s3Prefix",
+                    "group": "1_object@4"
+                },
+                {
+                    "command": "s3-management-tool.downloadSelected",
+                    "when": "view == s3ManagementBuckets && viewItem == s3Prefix",
+                    "group": "inline"
+                },
+                {
+                    "command": "s3-management-tool.deleteObject",
+                    "when": "view == s3ManagementBuckets && viewItem == s3Object",
+                    "group": "inline"
+                },
+                {
+                    "command": "s3-management-tool.downloadSelected",
+                    "when": "view == s3ManagementBuckets && viewItem == s3Object",
+                    "group": "inline"
+                },
+                {
+                    "command": "s3-management-tool.downloadObject",
+                    "when": "view == s3ManagementBuckets && viewItem == s3Object",
+                    "group": "1_object@1"
+                },
+                {
+                    "command": "s3-management-tool.previewObject",
+                    "when": "view == s3ManagementBuckets && viewItem == s3Object",
+                    "group": "1_object@2"
+                },
+                {
+                    "command": "s3-management-tool.copyObject",
+                    "when": "view == s3ManagementBuckets && viewItem == s3Object",
+                    "group": "1_object@3"
+                },
+                {
+                    "command": "s3-management-tool.viewMetadata",
+                    "when": "view == s3ManagementBuckets && viewItem == s3Object",
+                    "group": "1_object@4"
+                },
+                {
+                    "command": "s3-management-tool.copyS3Uri",
+                    "when": "view == s3ManagementBuckets && viewItem == s3Object",
+                    "group": "1_object@5"
+                },
+                {
+                    "command": "s3-management-tool.generatePresignedUrl",
+                    "when": "view == s3ManagementBuckets && viewItem == s3Object",
+                    "group": "1_object@6"
+                },
+                {
+                    "command": "s3-management-tool.viewVersions",
+                    "when": "view == s3ManagementBuckets && viewItem == s3Object",
+                    "group": "1_object@7"
+                },
+                {
+                    "command": "s3-management-tool.renameObject",
+                    "when": "view == s3ManagementBuckets && viewItem == s3Object",
+                    "group": "1_object@8"
+                },
+                {
+                    "command": "s3-management-tool.manageTags",
+                    "when": "view == s3ManagementBuckets && viewItem == s3Object",
+                    "group": "1_object@9"
+                }
+            ]
+        }
+    },
+    "scripts": {
+        "compile": "tsc -p ./",
+        "compile:e2e": "tsc -p ./tsconfig.e2e.json",
+        "bundle": "esbuild ./src/extension-standalone.ts --bundle --outfile=out/extension-standalone.js --external:vscode --format=cjs --platform=node --sourcemap",
+        "watch": "tsc -watch -p ./",
+        "test": "jest",
+        "test:unit": "jest --testPathPattern=src/tests/unit",
+        "test:unit:coverage": "jest --coverage --testPathPattern=src/tests/unit",
+        "test:e2e": "NODE_OPTIONS='--experimental-vm-modules' jest --config jest.e2e.config.js --runInBand",
+        "test:e2e:ci": "CI=true NODE_OPTIONS='--experimental-vm-modules' jest --config jest.e2e.config.js --runInBand",
+        "test:e2e:coverage": "CI=true NODE_OPTIONS='--experimental-vm-modules' jest --config jest.e2e.config.js --runInBand --coverage",
+        "test:all": "pnpm run test:unit && pnpm run test:e2e",
+        "package": "vsce package --no-dependencies"
+    },
+    "dependencies": {
+        "@aws-sdk/client-s3": "^3.1000.0",
+        "@aws-sdk/s3-request-presigner": "^3.1000.0",
+        "@aws-sdk/credential-providers": "^3.1000.0",
+        "@aws-sdk/client-sts": "^3.1000.0"
+    },
+    "devDependencies": {
+        "@types/jest": "^30.0.0",
+        "@types/node": "^18.19.26",
+        "@types/vscode": "^1.88.0",
+        "esbuild": "^0.27.3",
+        "fast-check": "^3.0.0",
+        "jest": "^30.2.0",
+        "ts-jest": "^29.4.6",
+        "typescript": "^5.4.5"
+    }
+}

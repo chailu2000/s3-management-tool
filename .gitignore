@@ -1,0 +1,40 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.swp
+*.swo
+
+# Application data
+.sqs-tools/
+
+# Environment / secrets (use .env.example as the template)
+.env
+
+# Docker build artefacts
+.docker/
+
+# Build output
+out/
+out-e2e/
+node_modules
+
+# Test output
+test-results/
+playwright-report/
+
+# VS Code extension build artifacts
+*.vsix
+
+# VS Code extension publishing credentials
+.vsce
+
+# Package lock files (project uses pnpm)
+**/package-lock.json
+
+# AI assistant settings
+.qwen/
