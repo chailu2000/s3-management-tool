@@ -525,6 +525,7 @@ export class S3Service {
                     etag: v.ETag ?? '',
                     storageClass: v.StorageClass,
                     deleteMarker: false,
+                    key: v.Key ?? '',
                 });
             }
 
@@ -537,6 +538,7 @@ export class S3Service {
                     lastModified: m.LastModified ?? new Date(0),
                     etag: '',
                     deleteMarker: true,
+                    key: m.Key ?? '',
                 });
             }
 
@@ -545,6 +547,47 @@ export class S3Service {
         } while (keyMarker);
 
         return allVersions.sort((a, b) => b.lastModified.getTime() - a.lastModified.getTime());
+    }
+
+    /**
+     * Lists a page of deleted files (DeleteMarkers where IsLatest is true) for an entire bucket.
+     */
+    async listDeletedFilesPage(
+        bucket: string,
+        region: string,
+        keyMarker?: string,
+        versionIdMarker?: string,
+    ): Promise<{ deletedFiles: ObjectVersion[]; nextKeyMarker?: string; nextVersionIdMarker?: string }> {
+        const client = this.factory.getClient(region);
+        const deletedFiles: ObjectVersion[] = [];
+
+        const resp = await withRetry(() =>
+            client.send(new ListObjectVersionsCommand({
+                Bucket: bucket,
+                KeyMarker: keyMarker,
+                VersionIdMarker: versionIdMarker,
+            }))
+        );
+
+        for (const m of resp.DeleteMarkers ?? []) {
+            if (m.IsLatest) {
+                deletedFiles.push({
+                    versionId: m.VersionId ?? 'null',
+                    isLatest: m.IsLatest ?? false,
+                    size: 0,
+                    lastModified: m.LastModified ?? new Date(0),
+                    etag: '',
+                    deleteMarker: true,
+                    key: m.Key ?? '',
+                });
+            }
+        }
+
+        return {
+            deletedFiles,
+            nextKeyMarker: resp.NextKeyMarker,
+            nextVersionIdMarker: resp.NextVersionIdMarker,
+        };
     }
 
     /**

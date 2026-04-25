@@ -2,7 +2,7 @@
     "name": "s3-management-tool",
     "displayName": "AWS S3 Management Tool",
     "description": "Manage AWS S3 buckets and objects directly from VS Code.",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "publisher": "chailu2000",
     "author": {
         "name": "Lu Chai",
@@ -179,6 +179,11 @@
                 "icon": "$(history)"
             },
             {
+                "command": "s3-management-tool.viewDeletedFiles",
+                "title": "View Deleted Files",
+                "icon": "$(trash)"
+            },
+            {
                 "command": "s3-management-tool.renameObject",
                 "title": "Rename",
                 "icon": "$(edit)"
@@ -256,6 +261,11 @@
                     "command": "s3-management-tool.bucketInfo",
                     "when": "view == s3ManagementBuckets && viewItem == s3Bucket",
                     "group": "bucket@1"
+                },
+                {
+                    "command": "s3-management-tool.viewDeletedFiles",
+                    "when": "view == s3ManagementBuckets && viewItem == s3Bucket",
+                    "group": "bucket@2"
                 },
                 {
                     "command": "s3-management-tool.createFolder",

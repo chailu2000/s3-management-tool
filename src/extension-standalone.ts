@@ -329,6 +329,13 @@ function registerCommands(context: vscode.ExtensionContext): void {
         }),
     );
 
+    context.subscriptions.push(
+        vscode.commands.registerCommand('s3-management-tool.viewDeletedFiles', async (item: S3BucketItem) => {
+            const { viewDeletedFiles } = await import('./commands/view-deleted-files');
+            await viewDeletedFiles(item, s3Service, extensionContext.extensionUri, treeProvider);
+        }),
+    );
+
     // --- Feature #12: Inline Rename ---
 
     context.subscriptions.push(

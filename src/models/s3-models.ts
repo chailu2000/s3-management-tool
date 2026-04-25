@@ -179,6 +179,7 @@ export interface ObjectVersion {
     etag: string;
     storageClass?: string;
     deleteMarker: boolean;
+    key?: string;
 }
 
 // ---------------------------------------------------------------------------
