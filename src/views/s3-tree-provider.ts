@@ -25,7 +25,7 @@ import { uploadDirectory, uploadSingleFile } from '../utils/upload-helpers';
 export type S3TreeItem = S3BucketItem | S3PrefixItem | S3ObjectItem | S3ErrorItem | S3LoadMoreItem;
 
 // Maximum items to load at once to prevent hanging on huge folders
-const MAX_ITEMS_PER_LOAD = 10000;
+const MAX_ITEMS_PER_LOAD = 1000;
 
 export class S3BucketItem extends vscode.TreeItem {
     readonly contextValue = 's3Bucket';
@@ -170,7 +170,33 @@ export class S3TreeProvider implements
     /**
      * Fires onDidChangeTreeData for the given item (or the full tree if undefined).
      */
-    refresh(item?: S3TreeItem): void {
+    refresh(item?: S3TreeItem, clearCache: boolean = true): void {
+        if (clearCache) {
+            if (!item) {
+                this.paginationState.clear();
+                this.accumulatedItems.clear();
+            } else {
+                let bucket = '';
+                let prefix = '';
+                if (item instanceof S3BucketItem) {
+                    bucket = item.config.name;
+                    prefix = item.config.prefix ?? '';
+                } else if (item instanceof S3PrefixItem) {
+                    bucket = item.bucket;
+                    prefix = item.prefix;
+                }
+                
+                if (bucket) {
+                    const prefixKey = `${bucket}/${prefix}`;
+                    for (const key of this.paginationState.keys()) {
+                        if (key.startsWith(prefixKey)) {
+                            this.paginationState.delete(key);
+                            this.accumulatedItems.delete(`accumulated:${key}`);
+                        }
+                    }
+                }
+            }
+        }
         this._onDidChangeTreeData.fire(item);
     }
 
@@ -194,12 +220,14 @@ export class S3TreeProvider implements
         let itemsInThisCall = 0;
 
         do {
+            const keysToFetch = MAX_ITEMS_PER_LOAD - itemsInThisCall;
             const page = await this.s3Service.listObjects(
                 item.bucket,
                 item.prefix,
                 item.region,
                 continuationToken,
                 item.bucketConfig,
+                keysToFetch,
             );
 
             const newItems = page.commonPrefixes.length + page.objects.length;
@@ -208,7 +236,7 @@ export class S3TreeProvider implements
             nextObjects.push(...page.objects);
             continuationToken = page.nextContinuationToken;
 
-            if (itemsInThisCall >= MAX_ITEMS_PER_LOAD && continuationToken) {
+            if (itemsInThisCall >= MAX_ITEMS_PER_LOAD || !continuationToken) {
                 break;
             }
         } while (continuationToken);
@@ -226,7 +254,7 @@ export class S3TreeProvider implements
         this.accumulatedItems.set(accumulatedKey, existing);
 
         // Refresh the tree to show the new items
-        this.refresh();
+        this.refresh(undefined, false);
     }
 
     getTreeItem(element: S3TreeItem): vscode.TreeItem {
@@ -278,11 +306,27 @@ export class S3TreeProvider implements
         const paginationKey = `${bucket}/${prefix}`;
         const accumulatedKey = `accumulated:${paginationKey}`;
 
-        // If starting fresh, reset pagination state
-        if (!startToken) {
-            this.paginationState.set(paginationKey, { continuationToken: undefined, itemsLoaded: 0 });
-            this.accumulatedItems.delete(accumulatedKey);
+        // If we have cached items and are not explicitly starting fresh, use them
+        if (!startToken && this.accumulatedItems.has(accumulatedKey)) {
+            const accumulated = this.accumulatedItems.get(accumulatedKey)!;
+            const state = this.paginationState.get(paginationKey) || { continuationToken: undefined, itemsLoaded: 0 };
+            
+            const prefixItems: S3PrefixItem[] = accumulated.prefixes.map(
+                p => new S3PrefixItem(bucket, region, p, bucketConfig),
+            );
+            const objectItems: S3ObjectItem[] = accumulated.objects.map(
+                obj => new S3ObjectItem(bucket, region, obj.key, obj.size, obj.lastModified),
+            );
+            const result: S3TreeItem[] = [...prefixItems, ...objectItems];
+            if (state.continuationToken) {
+                result.push(new S3LoadMoreItem(bucket, region, prefix, state.continuationToken, state.itemsLoaded, bucketConfig));
+            }
+            return result;
         }
+
+        // Otherwise, fetch from network
+        this.paginationState.set(paginationKey, { continuationToken: startToken, itemsLoaded: 0 });
+        this.accumulatedItems.set(accumulatedKey, { prefixes: [], objects: [] });
 
         const allPrefixes: string[] = [];
         const allObjects: Array<{ key: string; size: number; lastModified: Date }> = [];
@@ -291,7 +335,8 @@ export class S3TreeProvider implements
 
         // Fetch pages until we hit the limit or run out of data
         do {
-            const page = await this.s3Service.listObjects(bucket, prefix, region, continuationToken, bucketConfig);
+            const keysToFetch = MAX_ITEMS_PER_LOAD - itemsInThisCall;
+            const page = await this.s3Service.listObjects(bucket, prefix, region, continuationToken, bucketConfig, keysToFetch);
 
             if ((page as { accessDenied?: boolean }).accessDenied) {
                 return [new S3ErrorItem(`Access denied to "${bucket}/${prefix}"`)];
@@ -305,7 +350,7 @@ export class S3TreeProvider implements
             continuationToken = page.nextContinuationToken;
 
             // Stop if we've loaded enough items in this call
-            if (itemsInThisCall >= MAX_ITEMS_PER_LOAD && continuationToken) {
+            if (itemsInThisCall >= MAX_ITEMS_PER_LOAD || !continuationToken) {
                 break;
             }
         } while (continuationToken);
@@ -316,16 +361,14 @@ export class S3TreeProvider implements
         state.continuationToken = continuationToken;
         this.paginationState.set(paginationKey, state);
 
-        // Merge with accumulated items if any
-        const accumulated = this.accumulatedItems.get(accumulatedKey);
-        const finalPrefixes = accumulated ? [...accumulated.prefixes, ...allPrefixes] : allPrefixes;
-        const finalObjects = accumulated ? [...accumulated.objects, ...allObjects] : allObjects;
+        // Store this batch in accumulatedItems
+        this.accumulatedItems.set(accumulatedKey, { prefixes: allPrefixes, objects: allObjects });
 
-        const prefixItems: S3PrefixItem[] = finalPrefixes.map(
+        const prefixItems: S3PrefixItem[] = allPrefixes.map(
             p => new S3PrefixItem(bucket, region, p, bucketConfig),
         );
 
-        const objectItems: S3ObjectItem[] = finalObjects.map(
+        const objectItems: S3ObjectItem[] = allObjects.map(
             obj => new S3ObjectItem(bucket, region, obj.key, obj.size, obj.lastModified),
         );
 

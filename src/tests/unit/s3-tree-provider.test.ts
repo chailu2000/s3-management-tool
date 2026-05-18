@@ -227,7 +227,7 @@ describe('S3TreeProvider — bucket node expansion', () => {
         const bucketItem = new S3BucketItem(config);
         const children = await provider.getChildren(bucketItem);
 
-        expect(listObjects).toHaveBeenCalledWith('my-bucket', '', 'us-east-1', undefined, config);
+        expect(listObjects).toHaveBeenCalledWith('my-bucket', '', 'us-east-1', undefined, config, 1000);
         expect(children).toHaveLength(2);
         expect(children[0]).toBeInstanceOf(S3PrefixItem);
         expect(children[1]).toBeInstanceOf(S3ObjectItem);
@@ -247,7 +247,7 @@ describe('S3TreeProvider — bucket node expansion', () => {
         const bucketItem = new S3BucketItem(config);
         await provider.getChildren(bucketItem);
 
-        expect(listObjects).toHaveBeenCalledWith('my-bucket', 'data/', 'us-east-1', undefined, config);
+        expect(listObjects).toHaveBeenCalledWith('my-bucket', 'data/', 'us-east-1', undefined, config, 1000);
     });
 });
 
@@ -266,7 +266,7 @@ describe('S3TreeProvider — prefix node expansion', () => {
         const prefixItem = new S3PrefixItem('my-bucket', 'us-east-1', 'folder/', config);
         const children = await provider.getChildren(prefixItem);
 
-        expect(listObjects).toHaveBeenCalledWith('my-bucket', 'folder/', 'us-east-1', undefined, config);
+        expect(listObjects).toHaveBeenCalledWith('my-bucket', 'folder/', 'us-east-1', undefined, config, 1000);
         expect(children).toHaveLength(1);
         expect(children[0]).toBeInstanceOf(S3ObjectItem);
     });

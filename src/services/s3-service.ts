@@ -211,6 +211,7 @@ export class S3Service {
         region: string,
         continuationToken?: string,
         bucketConfig?: BucketConfig,
+        maxKeys?: number,
     ): Promise<ListObjectsPage & { accessDenied?: boolean }> {
         // Enforce prefix scope
         const effectivePrefix = this.resolvePrefix(prefix, bucketConfig);
@@ -223,6 +224,7 @@ export class S3Service {
                     Prefix: effectivePrefix,
                     Delimiter: '/',
                     ContinuationToken: continuationToken,
+                    MaxKeys: maxKeys,
                 }))
             );
 
