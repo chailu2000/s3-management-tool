@@ -2,7 +2,7 @@
     "name": "s3-management-tool",
     "displayName": "AWS S3 Management Tool",
     "description": "Manage AWS S3 buckets and objects directly from VS Code.",
-    "version": "0.2.2",
+    "version": "0.2.3",
     "publisher": "chailu2000",
     "author": {
         "name": "Lu Chai",
