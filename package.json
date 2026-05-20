@@ -366,13 +366,14 @@
         }
     },
     "scripts": {
+        "vscode:prepublish": "npm run bundle",
         "compile": "tsc -p ./",
         "compile:e2e": "tsc -p ./tsconfig.e2e.json",
         "bundle": "esbuild ./src/extension-standalone.ts --bundle --outfile=out/extension-standalone.js --external:vscode --format=cjs --platform=node --sourcemap",
         "watch": "tsc -watch -p ./",
         "test": "jest",
-        "test:unit": "jest --testPathPattern=src/tests/unit",
-        "test:unit:coverage": "jest --coverage --testPathPattern=src/tests/unit",
+        "test:unit": "jest --testPathPatterns=src/tests/unit",
+        "test:unit:coverage": "jest --coverage --testPathPatterns=src/tests/unit",
         "test:e2e": "NODE_OPTIONS='--experimental-vm-modules' jest --config jest.e2e.config.js --runInBand",
         "test:e2e:ci": "CI=true NODE_OPTIONS='--experimental-vm-modules' jest --config jest.e2e.config.js --runInBand",
         "test:e2e:coverage": "CI=true NODE_OPTIONS='--experimental-vm-modules' jest --config jest.e2e.config.js --runInBand --coverage",
