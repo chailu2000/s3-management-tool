@@ -273,6 +273,11 @@
                     "group": "1_object@0"
                 },
                 {
+                    "command": "s3-management-tool.copyS3Uri",
+                    "when": "view == s3ManagementBuckets && viewItem == s3Bucket",
+                    "group": "1_object@1"
+                },
+                {
                     "command": "s3-management-tool.createFolder",
                     "when": "view == s3ManagementBuckets && viewItem == s3Prefix",
                     "group": "1_object@0"

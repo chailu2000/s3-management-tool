@@ -280,7 +280,7 @@ function registerCommands(context: vscode.ExtensionContext): void {
     context.subscriptions.push(
         vscode.commands.registerCommand('s3-management-tool.copyS3Uri', async (item) => {
             const { copyS3Uri } = await import('./commands/copy-s3-uri');
-            await copyS3Uri(item as S3ObjectItem | S3PrefixItem);
+            await copyS3Uri(item as S3BucketItem | S3ObjectItem | S3PrefixItem);
         }),
     );
 
